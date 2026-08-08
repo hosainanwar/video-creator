@@ -1,0 +1,14 @@
+{
+  "name": "Fantasy & Fiction",
+  "description": "Original fictional stories set in magical or imaginary worlds",
+  "prompt_template": "Create a fantasy story about {topic}. Build a magical world with vivid imagery and an engaging narrative.",
+  "visual_style": "magical, mystical, fantasy art, ethereal lighting",
+  "music_mood": "magical, mysterious, fantasy",
+  "example_topics": [
+    "magical realms",
+    "mythical creatures",
+    "hero's journey",
+    "ancient prophecies",
+    "enchanted forests"
+  ]
+}

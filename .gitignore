@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+
+# Output files
+output/
+*.mp4
+*.mp3
+*.wav
+
+# Temporary files
+temp/
+*.tmp
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+Thumbs.db
+
+# Ollama
+ollama_models/
+
+# Stable Diffusion (if used)
+models/
+stable-diffusion/
+
+# Images (generated)
+*.jpg
+*.jpeg
+*.png
+!assets/*
+!templates/*

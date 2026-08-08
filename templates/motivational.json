@@ -1,0 +1,14 @@
+{
+  "name": "Motivational Stories",
+  "description": "Inspirational stories about overcoming challenges and achieving success",
+  "prompt_template": "Create a motivational story about {topic} that inspires and uplifts. Focus on the journey, struggles, and ultimate triumph.",
+  "visual_style": "warm, inspiring, sunrise/sunset, people overcoming obstacles",
+  "music_mood": "uplifting, inspiring, cinematic",
+  "example_topics": [
+    "perseverance",
+    "self-belief",
+    "hard work",
+    "never giving up",
+    "following your dreams"
+  ]
+}

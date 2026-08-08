@@ -1,0 +1,22 @@
+# Core dependencies
+moviepy==1.0.3
+Pillow==10.2.0
+python-dotenv==1.0.0
+
+# Voice generation
+gTTS==2.5.0
+
+# Image generation (for local Stable Diffusion)
+# diffusers==0.25.0
+# torch==2.1.0
+# accelerate==0.25.0
+
+# Stock media
+requests==2.31.0
+
+# Web UI
+streamlit==1.31.0
+
+# Utilities
+pydub==0.25.1
+numpy==1.26.3

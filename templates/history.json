@@ -1,0 +1,14 @@
+{
+  "name": "History & Biography",
+  "description": "Stories about historical events, figures, and their impact",
+  "prompt_template": "Create a compelling historical story about {topic}. Focus on the key moments, the people involved, and why it matters today.",
+  "visual_style": "epic, dramatic, historical imagery, period-appropriate",
+  "music_mood": "epic, dramatic, orchestral",
+  "example_topics": [
+    "ancient civilizations",
+    "famous inventors",
+    "pivotal moments in history",
+    "great leaders",
+    "scientific discoveries"
+  ]
+}

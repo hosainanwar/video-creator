@@ -1,0 +1,14 @@
+{
+  "name": "Amazing Facts",
+  "description": "Mind-blowing facts and interesting information",
+  "prompt_template": "Create an engaging fact-based story about {topic}. Make it surprising, educational, and shareable.",
+  "visual_style": "colorful, engaging, infographic-style, eye-catching",
+  "music_mood": "curious, fun, engaging",
+  "example_topics": [
+    "space and universe",
+    "human body",
+    "animals and nature",
+    "technology",
+    "history's mysteries"
+  ]
+}

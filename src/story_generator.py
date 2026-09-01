@@ -1,17 +1,27 @@
-"""Story generator using Ollama (local LLM)"""
+"""Story generator supporting Ollama (local LLM) and OpenAI API"""
 
 import json
 import requests
 from typing import Dict, List, Optional
-from .config import OLLAMA_BASE_URL, OLLAMA_MODEL
+from .config import (
+    LLM_PROVIDER, OLLAMA_BASE_URL, OLLAMA_MODEL,
+    OPENAI_API_KEY, OPENAI_MODEL,
+)
 
 
 class StoryGenerator:
-    """Generate stories using Ollama (local LLM)"""
+    """Generate stories using Ollama or OpenAI"""
     
-    def __init__(self, model: str = None):
-        self.base_url = OLLAMA_BASE_URL
-        self.model = model or OLLAMA_MODEL
+    def __init__(self, provider: str = None, model: str = None,
+                 api_key: str = None):
+        self.provider = provider or LLM_PROVIDER
+        self.api_key = api_key or OPENAI_API_KEY
+        
+        if self.provider == "openai":
+            self.model = model or OPENAI_MODEL
+        else:
+            self.base_url = OLLAMA_BASE_URL
+            self.model = model or OLLAMA_MODEL
     
     def _call_ollama(self, prompt: str, system_prompt: str = None) -> str:
         """Call Ollama API"""
@@ -33,6 +43,44 @@ class StoryGenerator:
         except requests.exceptions.RequestException as e:
             print(f"Error calling Ollama: {e}")
             return None
+    
+    def _call_openai(self, prompt: str, system_prompt: str = None) -> str:
+        """Call OpenAI API"""
+        try:
+            from openai import OpenAI
+        except ImportError:
+            print("Error: 'openai' package not installed. Run: pip install openai")
+            return None
+        
+        if not self.api_key:
+            print("Error: OPENAI_API_KEY not set")
+            return None
+        
+        client = OpenAI(api_key=self.api_key)
+        messages = []
+        
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        
+        messages.append({"role": "user", "content": prompt})
+        
+        try:
+            completion = client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=0.7,
+                max_tokens=2000,
+            )
+            return completion.choices[0].message.content
+        except Exception as e:
+            print(f"Error calling OpenAI: {e}")
+            return None
+    
+    def _generate(self, prompt: str, system_prompt: str = None) -> str:
+        """Generate text using the configured LLM provider"""
+        if self.provider == "openai":
+            return self._call_openai(prompt, system_prompt)
+        return self._call_ollama(prompt, system_prompt)
     
     def generate_story(self, story_type: str, topic: str, duration: int = 60) -> Dict:
         """
@@ -78,7 +126,7 @@ Make the content emotional, engaging, and shareable.
 
 Output ONLY the JSON, no other text."""
         
-        response = self._call_ollama(prompt, system_prompt)
+        response = self._generate(prompt, system_prompt)
         
         if not response:
             return self._get_fallback_story(story_type, topic)

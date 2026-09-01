@@ -8,7 +8,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-from src.config import STORY_TYPES, OUTPUT_DIR
+from src.config import STORY_TYPES, OUTPUT_DIR, LLM_PROVIDER
 from src.story_generator import StoryGenerator
 from src.voice_generator import VoiceGenerator
 from src.image_generator import ImageGenerator
@@ -65,6 +65,14 @@ def main():
     with st.sidebar:
         st.header("Settings")
         
+        # LLM Provider selection
+        llm_provider = st.selectbox(
+            "LLM Provider",
+            options=["ollama", "openai"],
+            index=0 if LLM_PROVIDER == "ollama" else 1,
+            format_func=lambda x: "Ollama (Local)" if x == "ollama" else "OpenAI (API)"
+        )
+        
         # Story type selection
         story_type = st.selectbox(
             "Story Type",
@@ -102,6 +110,15 @@ def main():
         
         # API Keys
         with st.expander("API Keys"):
+            if llm_provider == "openai":
+                openai_key = st.text_input(
+                    "OpenAI API Key",
+                    type="password",
+                    help="Enter your OpenAI API key"
+                )
+                if openai_key:
+                    os.environ["OPENAI_API_KEY"] = openai_key
+            
             pexels_key = st.text_input(
                 "Pexels API Key",
                 type="password",
@@ -133,7 +150,7 @@ def main():
             
             with st.spinner("Creating your video..."):
                 # Initialize components
-                story_gen = StoryGenerator()
+                story_gen = StoryGenerator(provider=llm_provider)
                 voice_gen = VoiceGenerator()
                 image_gen = ImageGenerator(use_ai=use_ai_images)
                 video_assembler = VideoAssembler()

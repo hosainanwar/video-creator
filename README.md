@@ -1,10 +1,10 @@
 # Video Creator AI 🎬
 
-Create storytelling social media content with AI - 100% free and runs locally!
+Create storytelling social media content with AI using the OpenAI API.
 
 ## Features
 
-- **AI Story Generation** - Uses Ollama (local LLM) to create engaging stories
+- **AI Story Generation** - Uses OpenAI to create engaging stories
 - **Voice Over** - Free text-to-speech with gTTS
 - **Stock Images** - Free images from Pexels or AI-generated
 - **Video Assembly** - Automatic video creation with MoviePy
@@ -28,18 +28,20 @@ cd video-creator
 pip install -r requirements.txt
 ```
 
-### 2. Install Ollama (Local LLM)
+### 2. Configure API Keys
 
 ```bash
-# macOS
-brew install ollama
-
-# Start Ollama
-ollama serve
-
-# Download a model (in another terminal)
-ollama pull llama3
+cp .env.example .env
 ```
+
+Edit `.env` and set:
+
+```bash
+OPENAI_API_KEY=your_key_here
+OPENAI_MODEL=gpt-4o-mini
+```
+
+Optional: add a free [Pexels API key](https://www.pexels.com/api/) for better stock photos.
 
 ### 3. Run the CLI
 
@@ -63,7 +65,7 @@ streamlit run app.py
 video-creator/
 ├── src/
 │   ├── config.py              # Configuration settings
-│   ├── story_generator.py     # AI story generation (Ollama)
+│   ├── story_generator.py     # AI story generation (OpenAI)
 │   ├── voice_generator.py     # Text-to-speech (gTTS)
 │   ├── image_generator.py     # Image generation
 │   ├── stock_media.py         # Pexels API integration
@@ -103,23 +105,17 @@ python run.py --interactive
 4. Adjust duration slider
 5. Click "Create Video"
 
-## API Keys (Optional)
+## API Keys
 
-The tool works without API keys, but you can add them for better results:
+### OpenAI (Required)
+1. Go to [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+2. Create an API key
+3. Set `OPENAI_API_KEY` in `.env`
 
-### Pexels (Free - Recommended)
+### Pexels (Optional - Recommended)
 1. Go to [pexels.com/api](https://www.pexels.com/api/)
 2. Sign up for free
-3. Get your API key
-4. Set in `.env` file or enter in web UI
-
-```bash
-# Create .env file
-cp .env.example .env
-
-# Edit .env and add your key
-PEXELS_API_KEY=your_key_here
-```
+3. Set `PEXELS_API_KEY` in `.env`
 
 ## Advanced: AI Images (Stable Diffusion)
 
@@ -160,11 +156,8 @@ VIDEO_CONFIG = {
 
 ## Troubleshooting
 
-### "Ollama not found"
-Make sure Ollama is running:
-```bash
-ollama serve
-```
+### "OPENAI_API_KEY not set"
+Add your key to `.env`, or enter it in the Web UI sidebar under API Keys.
 
 ### "No audio generated"
 Check your internet connection (gTTS requires it for free tier)
@@ -181,8 +174,8 @@ This project is for personal use. Feel free to modify and customize!
 
 ## Credits
 
-- **Ollama** - Local LLM inference
+- **OpenAI** - Story generation
 - **gTTS** - Free text-to-speech
 - **Pexels** - Free stock photos
 - **MoviePy** - Video editing
-- **Streamlit** - Web UI framework# video-creator
+- **Streamlit** - Web UI framework

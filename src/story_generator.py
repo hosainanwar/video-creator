@@ -1,49 +1,17 @@
-"""Story generator supporting Ollama (local LLM) and OpenAI API"""
+"""Story generator using OpenAI API"""
 
 import json
-import requests
-from typing import Dict, List, Optional
-from .config import (
-    LLM_PROVIDER, OLLAMA_BASE_URL, OLLAMA_MODEL,
-    OPENAI_API_KEY, OPENAI_MODEL,
-)
+from typing import Dict, List
+from .config import OPENAI_API_KEY, OPENAI_MODEL
 
 
 class StoryGenerator:
-    """Generate stories using Ollama or OpenAI"""
-    
-    def __init__(self, provider: str = None, model: str = None,
-                 api_key: str = None):
-        self.provider = provider or LLM_PROVIDER
+    """Generate stories using OpenAI"""
+
+    def __init__(self, model: str = None, api_key: str = None):
         self.api_key = api_key or OPENAI_API_KEY
-        
-        if self.provider == "openai":
-            self.model = model or OPENAI_MODEL
-        else:
-            self.base_url = OLLAMA_BASE_URL
-            self.model = model or OLLAMA_MODEL
-    
-    def _call_ollama(self, prompt: str, system_prompt: str = None) -> str:
-        """Call Ollama API"""
-        url = f"{self.base_url}/api/generate"
-        
-        payload = {
-            "model": self.model,
-            "prompt": prompt,
-            "stream": False,
-        }
-        
-        if system_prompt:
-            payload["system"] = system_prompt
-        
-        try:
-            response = requests.post(url, json=payload, timeout=120)
-            response.raise_for_status()
-            return response.json()["response"]
-        except requests.exceptions.RequestException as e:
-            print(f"Error calling Ollama: {e}")
-            return None
-    
+        self.model = model or OPENAI_MODEL
+
     def _call_openai(self, prompt: str, system_prompt: str = None) -> str:
         """Call OpenAI API"""
         try:
@@ -51,19 +19,19 @@ class StoryGenerator:
         except ImportError:
             print("Error: 'openai' package not installed. Run: pip install openai")
             return None
-        
+
         if not self.api_key:
-            print("Error: OPENAI_API_KEY not set")
+            print("Error: OPENAI_API_KEY not set. Add it to your .env file.")
             return None
-        
+
         client = OpenAI(api_key=self.api_key)
         messages = []
-        
+
         if system_prompt:
             messages.append({"role": "system", "content": system_prompt})
-        
+
         messages.append({"role": "user", "content": prompt})
-        
+
         try:
             completion = client.chat.completions.create(
                 model=self.model,
@@ -75,32 +43,30 @@ class StoryGenerator:
         except Exception as e:
             print(f"Error calling OpenAI: {e}")
             return None
-    
+
     def _generate(self, prompt: str, system_prompt: str = None) -> str:
-        """Generate text using the configured LLM provider"""
-        if self.provider == "openai":
-            return self._call_openai(prompt, system_prompt)
-        return self._call_ollama(prompt, system_prompt)
-    
+        """Generate text using OpenAI"""
+        return self._call_openai(prompt, system_prompt)
+
     def generate_story(self, story_type: str, topic: str, duration: int = 60) -> Dict:
         """
         Generate a complete story with scenes and image prompts
-        
+
         Args:
             story_type: Type of story (motivational, history, fantasy, facts)
             topic: Main topic or theme
             duration: Target duration in seconds
-        
+
         Returns:
             Dictionary with story data
         """
-        
+
         system_prompt = """You are a professional storyteller creating content for social media.
 Output ONLY valid JSON, no additional text or markdown.
 Focus on creating engaging, short-form content that captures attention quickly."""
-        
+
         num_scenes = max(3, min(10, duration // 10))  # 1 scene per 10 seconds
-        
+
         prompt = f"""Create a {story_type} story about "{topic}" for a {duration}-second social media video.
 
 Output JSON format:
@@ -125,36 +91,36 @@ The image_prompt should be detailed enough for AI image generation.
 Make the content emotional, engaging, and shareable.
 
 Output ONLY the JSON, no other text."""
-        
+
         response = self._generate(prompt, system_prompt)
-        
+
         if not response:
             return self._get_fallback_story(story_type, topic)
-        
+
         # Parse JSON from response
         try:
             # Try to extract JSON from response
             json_start = response.find('{')
             json_end = response.rfind('}') + 1
-            
+
             if json_start != -1 and json_end != -1:
                 json_str = response[json_start:json_end]
                 story_data = json.loads(json_str)
-                
+
                 # Ensure required fields exist
                 story_data = self._validate_story(story_data, topic)
                 return story_data
             else:
                 print("No JSON found in response, using fallback")
                 return self._get_fallback_story(story_type, topic)
-                
+
         except json.JSONDecodeError as e:
             print(f"JSON parse error: {e}, using fallback")
             return self._get_fallback_story(story_type, topic)
-    
+
     def _validate_story(self, story_data: Dict, topic: str) -> Dict:
         """Validate and ensure story has all required fields"""
-        
+
         defaults = {
             "title": f"Amazing {topic} Story",
             "hook": f"Let me tell you something incredible about {topic}",
@@ -162,11 +128,11 @@ Output ONLY the JSON, no other text."""
             "moral": "Never stop learning!",
             "hashtags": ["storytelling", "motivation", "facts"]
         }
-        
+
         for key, value in defaults.items():
             if key not in story_data or not story_data[key]:
                 story_data[key] = value
-        
+
         # Ensure scenes have all required fields
         for i, scene in enumerate(story_data["scenes"]):
             scene_defaults = {
@@ -179,12 +145,12 @@ Output ONLY the JSON, no other text."""
             for key, value in scene_defaults.items():
                 if key not in scene:
                     scene[key] = value
-        
+
         return story_data
-    
+
     def _get_fallback_story(self, story_type: str, topic: str) -> Dict:
         """Fallback story when API fails"""
-        
+
         fallback_stories = {
             "motivational": {
                 "title": f"The Power of {topic.title()}",
@@ -303,26 +269,26 @@ Output ONLY the JSON, no other text."""
                 "hashtags": ["facts", "didyouknow", "amazing", topic.lower().replace(" ", "")]
             }
         }
-        
+
         return fallback_stories.get(story_type, fallback_stories["motivational"])
-    
+
     def generate_image_prompts(self, story_data: Dict) -> List[str]:
         """Extract image prompts from story data"""
-        return [scene.get("image_prompt", "A beautiful scene") 
+        return [scene.get("image_prompt", "A beautiful scene")
                 for scene in story_data.get("scenes", [])]
 
 
 def main():
     """Test the story generator"""
     generator = StoryGenerator()
-    
+
     # Test with motivational story
     story = generator.generate_story(
         story_type="motivational",
         topic="perseverance",
         duration=30
     )
-    
+
     print("Generated Story:")
     print(json.dumps(story, indent=2))
 

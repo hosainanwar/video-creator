@@ -36,9 +36,6 @@ temp/
 .DS_Store
 Thumbs.db
 
-# Ollama
-ollama_models/
-
 # Stable Diffusion (if used)
 models/
 stable-diffusion/

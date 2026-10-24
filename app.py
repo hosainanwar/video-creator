@@ -8,7 +8,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-from src.config import STORY_TYPES, OUTPUT_DIR, LLM_PROVIDER
+from src.config import STORY_TYPES, OUTPUT_DIR, OPENAI_API_KEY
 from src.story_generator import StoryGenerator
 from src.voice_generator import VoiceGenerator
 from src.image_generator import ImageGenerator
@@ -65,14 +65,6 @@ def main():
     with st.sidebar:
         st.header("Settings")
         
-        # LLM Provider selection
-        llm_provider = st.selectbox(
-            "LLM Provider",
-            options=["ollama", "openai"],
-            index=0 if LLM_PROVIDER == "ollama" else 1,
-            format_func=lambda x: "Ollama (Local)" if x == "ollama" else "OpenAI (API)"
-        )
-        
         # Story type selection
         story_type = st.selectbox(
             "Story Type",
@@ -109,15 +101,20 @@ def main():
             )
         
         # API Keys
-        with st.expander("API Keys"):
-            if llm_provider == "openai":
-                openai_key = st.text_input(
-                    "OpenAI API Key",
-                    type="password",
-                    help="Enter your OpenAI API key"
-                )
-                if openai_key:
-                    os.environ["OPENAI_API_KEY"] = openai_key
+        with st.expander("API Keys", expanded=not bool(OPENAI_API_KEY)):
+            openai_key = st.text_input(
+                "OpenAI API Key",
+                type="password",
+                value="",
+                help="Required for story generation. Set in .env or enter here."
+            )
+            if openai_key:
+                os.environ["OPENAI_API_KEY"] = openai_key
+                st.success("OpenAI API key set!")
+            elif OPENAI_API_KEY:
+                st.caption("Using OPENAI_API_KEY from .env")
+            else:
+                st.warning("OpenAI API key required for story generation")
             
             pexels_key = st.text_input(
                 "Pexels API Key",
@@ -147,10 +144,15 @@ def main():
             if not topic:
                 st.error("Please enter a topic!")
                 return
+
+            effective_key = os.environ.get("OPENAI_API_KEY") or OPENAI_API_KEY
+            if not effective_key:
+                st.error("Please set your OpenAI API key in the sidebar or .env file.")
+                return
             
             with st.spinner("Creating your video..."):
                 # Initialize components
-                story_gen = StoryGenerator(provider=llm_provider)
+                story_gen = StoryGenerator(api_key=effective_key)
                 voice_gen = VoiceGenerator()
                 image_gen = ImageGenerator(use_ai=use_ai_images)
                 video_assembler = VideoAssembler()
@@ -219,7 +221,7 @@ def main():
     ### Quick Start Guide
     
     1. **Install dependencies:** `pip install -r requirements.txt`
-    2. **Run Ollama:** `ollama run llama3` (for story generation)
+    2. **Set `OPENAI_API_KEY`** in `.env` (or enter it in the sidebar)
     3. **Optional:** Get a free Pexels API key for stock photos
     
     **Story Types:**
